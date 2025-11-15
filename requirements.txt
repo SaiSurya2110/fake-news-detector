@@ -1,0 +1,9 @@
+flask
+flask-cors
+torch
+transformers
+PyPDF2
+python-docx
+Pillow
+pytesseract
+openpyxl
