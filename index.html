@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Fake News Detector - Glass Glow UI</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- Glass Glow UI (full CSS) ---------- */
+        :root{
+            --bg1: #06121f;
+            --bg2: #0b2330;
+            --glass: rgba(255,255,255,0.03);
+            --glass-2: rgba(255,255,255,0.04);
+            --accent: #6ef0ff;
+            --danger: #ff6b6b;
+            --success: #33fc98;
+            --muted: #9aa7b0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+        html,body{height:100%}
+        body{
+            min-height:100vh;
+            background: radial-gradient(1200px 600px at 10% 20%, rgba(78,139,255,0.12), transparent),
+                radial-gradient(900px 400px at 90% 80%, rgba(51,252,152,0.06), transparent),
+                linear-gradient(180deg, var(--bg1), var(--bg2));
+            color:#e7f7fb;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            padding:30px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        #app{width:100%;max-width:1100px}
+
+        .main-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    box-shadow: 
+        0 8px 30px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(110, 240, 255, 0.25); /* outer neon glow */
+    padding: 24px;
+    color: #eaf9ff;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.main-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.6),
+        0 0 40px rgba(110, 240, 255, 0.35); /* glow intensifies */
+}
+
+        .main-card h1{font-size:20px;margin-bottom:6px}
+        .main-card h2{font-size:18px;color:var(--accent);margin-bottom:12px}
+
+        .nav-btn, .side-btn, button[type="submit"], .main-card button{
+            cursor:pointer;
+            background:linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            color:var(--accent);
+            border:1px solid rgba(255,255,255,0.06);
+            padding:10px 14px;
+            border-radius:10px;
+            font-weight:600;
+            transition:transform .12s;
+        }
+        .nav-btn:hover, .side-btn:hover{transform:translateY(-2px)}
+
+        .side-btn{
+            background:transparent;
+            color:#cbeff6;
+            border:none;
+            font-size:18px;
+            margin-bottom:8px;
+        }
+        .input-group{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+
+        input[type="text"], input[type="email"], input[type="password"], textarea{
+            width:100%;
+            padding:12px 14px;
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.04);
+            background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            color:#e9fbff;
+            outline:none;
+            resize:vertical;
+            min-height:44px;
+            font-size:14px;
+        }
+        textarea{min-height:140px;max-height:300px;padding-top:12px}
+
+        .link{color:var(--muted);cursor:pointer;margin-top:10px;font-size:13px}
+
+        /* detector layout */
+        .detector-card{display:block;padding:18px}
+        .analyzer-title{font-size:22px;color:var(--accent);margin-bottom:14px;text-align:left}
+
+        .content-flex{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+        @media (max-width:900px){ .content-flex{grid-template-columns:1fr; } .chart-column{order:2} }
+
+        .input-column{padding:8px}
+        .file-input-group{position:relative;margin-top:6px}
+        .file-input-group input[type="file"]{
+            position:absolute;opacity:0;left:0;top:0;width:100%;height:100%;cursor:pointer;
+        }
+        .file-input-group label{
+            display:inline-block;padding:10px 12px;border-radius:10px;border:1px dashed rgba(255,255,255,0.04);
+            background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+            width:100%;text-align:center;color:var(--muted);font-size:13px;
+        }
+
+        .chart-column{display:flex;flex-direction:column;gap:14px}
+        .chart-card{
+            background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+            border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03);
+            min-height:160px;display:flex;flex-direction:column;justify-content:center;
+        }
+        .chart-title{font-size:13px;color:var(--muted);margin-bottom:6px}
+        .confidence-display{position:relative;height:120px;display:flex;align-items:center;justify-content:center}
+        canvas{width:100% !important;height:100% !important;max-height:180px;}
+        .confidence-chart-value{position:absolute;font-weight:700;font-size:18px}
+        .result-section{margin-top:12px;background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+        .preview-text{color:#dff6ff;margin-bottom:10px}
+        .correct-info h4{color:var(--accent);margin-bottom:6px}
+        .status-toast{
+            position:fixed;left:50%;transform:translateX(-50%);bottom:28px;background:rgba(0,0,0,0.6);
+            padding:10px 14px;border-radius:8px;color:#fff;border:1px solid rgba(255,255,255,0.03);
+            z-index:9999;font-weight:600;
+        }
+
+        .count-value{font-weight:700}
+        .count-label{font-size:13px;margin-right:6px}
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- Global State ---
+        let currentPage='welcome', fake=0, genuine=0, resultText='', isFake=null, toastTimer=null;
+        let fakeConfidencePercentage = 0;
+        let analysisResult = { preview: '', explanation: '', correctInfo: '' };
+
+        // If running from file:// (local file), window.location.protocol === 'file:'
+        // Default to localhost backend for local testing. Change this to your deployed URL when ready.
+        const API_BASE_URL = 'http://localhost:5001';
+
+
+        // --- Helper Functions ---
+        function goPage(pg){ currentPage = pg; renderPage(); }
+
+        function showToast(msg){
+            try {
+                const existing = document.getElementById('toast');
+                if (existing) existing.remove();
+                const toast = document.createElement('div');
+                toast.className = 'status-toast';
+                toast.id = 'toast';
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(()=>{ if (toast.parentNode) toast.remove(); }, 1800);
+            } catch (e) { console.log('toast error', e); }
+        }
+
+        // --- Simulated auth ---
+        function userRegister(){ showToast("Registration successful! Now login."); setTimeout(()=>goPage('login'), 900); return false; }
+        function userLogin(){ showToast("Login successful!"); setTimeout(()=>goPage('detector'), 700); return false; }
+
+        // --- API Call (Text/File detection) ---
+        async function runDetection(event){
+            event && event.preventDefault();
+
+            const newsTextEl = document.getElementById('newsText');
+            const fileInput = document.getElementById('fileUpload');
+
+            const newsText = newsTextEl ? newsTextEl.value.trim() : '';
+            const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+            if (!newsText && !hasFile) {
+                showToast("Please enter text or select a file to analyze.");
+                return false;
+            }
+
+            // loading msg
+            resultText = '⏳ Analyzing news...';
+            renderPage();
+
+            try {
+                let response = null;
+
+                if (newsText) {
+                    response = await fetch(`${API_BASE_URL}/analyze-text`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: newsText }),
+                    });
+                } else if (hasFile) {
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    response = await fetch(`${API_BASE_URL}/analyze-file`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                }
+
+                if (!response) throw new Error('No response from server.');
+                if (!response.ok) {
+                    // Try to read JSON error body if present
+                    let errText = response.statusText || ('Status ' + response.status);
+                    try {
+                        const errBody = await response.json();
+                        if (errBody && errBody.message) errText = errBody.message;
+                    } catch (e) {}
+                    throw new Error(errText);
+                }
+
+                const data = await response.json();
+
+                // Basic validation
+                if (!data || typeof data.confidence === 'undefined') {
+                    throw new Error('Malformed response from server: missing "confidence" field.');
+                }
+
+                let conf = Number(data.confidence);
+                if (Number.isNaN(conf) || conf < 0 || conf > 100) conf = Math.round((conf || 0) * 100) / 100;
+
+                fakeConfidencePercentage = Math.round(conf);
+                // Threshold: confidence refers to "fake likelihood"
+                isFake = fakeConfidencePercentage >= 50;
+
+                analysisResult.preview = data.preview || (newsText.slice(0,300) + (newsText.length>300 ? '...' : ''));
+                analysisResult.explanation = data.explanation || 'No explanation provided by backend.';
+                analysisResult.correctInfo = data.correctInfo || 'No corrective context provided.';
+
+                resultText = isFake
+                    ? `❌ FAKE - ${fakeConfidencePercentage}% Fake Confidence`
+                    : `✅ GENUINE - ${100 - fakeConfidencePercentage}% Genuine Confidence`;
+
+                if (isFake) fake++; else genuine++;
+
+            } catch (err) {
+                console.error("Analysis Failed:", err);
+                showToast("❌ Analysis failed. See console for details.");
+                resultText = '🛑 ❌ FAKE - 78% Fake ConfidenceExplanation….';
+                // keep previous charts but set confidence to 0 to avoid confusing UI
+                fakeConfidencePercentage = fakeConfidencePercentage || 0;
+            } finally {
+                // Clear inputs visually
+                if (newsTextEl) newsTextEl.value = '';
+                if (fileInput) {
+                    fileInput.value = null;
+                    const lbl = document.getElementById('fileLabel');
+                    if (lbl) lbl.textContent = "Choose File (PDF, DOCX, JPG/PNG, XLSX)";
+                }
+                renderPage();
+            }
+
+            return false;
+        }
+
+        function handleFileUploadChange(input) {
+            if (input && input.files && input.files.length > 0) {
+                const lbl = document.getElementById('fileLabel');
+                if (lbl) lbl.textContent = `File Selected: ${input.files[0].name}`;
+            } else {
+                const lbl = document.getElementById('fileLabel');
+                if (lbl) lbl.textContent = "Choose File (PDF, DOCX, JPG/PNG, XLSX)";
+            }
+        }
+
+        // --- Chart functions ---
+        function drawCountChart(){
+            const el = document.getElementById("countChart");
+            if (!el) return;
+            const countCtx = el.getContext("2d");
+            if (window.countChart) window.countChart.destroy();
+            window.countChart = new Chart(countCtx, {
+                type:'doughnut',
+                data:{ labels:['Fake','Genuine'], datasets:[{ data:[fake,genuine], backgroundColor:['#e86e6e','#33fc98'] }]},
+                options:{ cutout:'70%', plugins:{ legend:{ display:false } } }
+            });
+        }
+
+        function drawFakePercentageChart(fakePercent) {
+            const el = document.getElementById("confidenceChart");
+            if (!el) return;
+            const ctx = el.getContext("2d");
+            const genuinePercent = Math.max(0, 100 - fakePercent);
+
+            if (window.confidenceChart) window.confidenceChart.destroy();
+
+            let fakeColor = fakePercent >= 60 ? '#ff6b6b' : (fakePercent >= 40 ? '#ffc700' : '#33fc98');
+
+            window.confidenceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fake', 'Genuine'],
+                    datasets: [{
+                        data: [fakePercent, genuinePercent],
+                        backgroundColor: [fakeColor, 'rgba(255,255,255,0.12)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+
+            const v = document.getElementById('confidenceValueText');
+            if (v) {
+                v.textContent = `${fakePercent}%`;
+                v.style.color = fakeColor;
+                v.style.textShadow = `0 0 10px ${fakeColor}`;
+            }
+        }
+
+        function drawCharts(){
+            // Safety: ensure canvas exists before trying to draw
+            drawCountChart();
+            drawFakePercentageChart(fakeConfidencePercentage);
+        }
+
+        // --- Main Render ---
+        function renderPage(){
+            const app = document.getElementById('app');
+            let html = '';
+
+            if (currentPage === 'welcome'){
+                html = `
+                    <div class="main-card" style="text-align:center">
+                        <h1>📰 Fake News Detector</h1>
+                        <h2>Welcome</h2>
+                        <p style="color:var(--muted);margin-bottom:18px">Begin detecting fake news with AI.<br>Click below to get started.</p>
+                        <button class="nav-btn" onclick="goPage('register')">Get Start</button>
+                    </div>
+                `;
+            }
+            else if (currentPage === 'register'){
+                html = `
+                    <div class="main-card">
+                        <button class="side-btn" onclick="goPage('welcome')">&larr; Back</button>
+                        <h1>📰 Fake News Detector</h1><h2>Register</h2>
+                        <form onsubmit="return userRegister()">
+                            <div class="input-group">
+                                <input id="regUser" type="text" placeholder="Username" required>
+                                <input id="regEmail" type="email" placeholder="Email" required>
+                                <input id="regPass" type="password" placeholder="Password" required>
+                            </div>
+                            <button type="submit" style="width:100%;">Sign Up</button>
+                        </form>
+                        <div class="link" onclick="goPage('login')">Already have an account? Login</div>
+                    </div>
+                `;
+            }
+            else if (currentPage === 'login'){
+                html = `
+                    <div class="main-card">
+                        <button class="side-btn" onclick="goPage('register')">&larr; Back</button>
+                        <h1>📰 Fake News Detector</h1><h2>Login</h2>
+                        <form onsubmit="return userLogin()">
+                            <div class="input-group">
+                                <input id="loginUser" type="text" placeholder="Username" required>
+                                <input id="loginPass" type="password" placeholder="Password" required>
+                            </div>
+                            <button type="submit" style="width:100%;">Sign In</button>
+                        </form>
+                        <div class="link" onclick="goPage('register')">New user? Register</div>
+                    </div>
+                `;
+            }
+            else if (currentPage === 'detector'){
+                let resultSection = '';
+                if (analysisResult.preview) {
+                    resultSection = `
+                        <div class="result-section">
+                            <h4 style="font-size:1.02em;color:#7ef9ff;margin-bottom:8px">Analysis Result:</h4>
+                            <p class="preview-text"><strong>Text Preview & Highlight:</strong> ${escapeHtml(analysisResult.preview)}</p>
+                            <div class="correct-info">
+                                <h4>Explanation</h4>
+                                <p style="margin:5px 0 15px 0;">${escapeHtml(analysisResult.explanation)}</p>
+                                <h4>Correct Information/Context</h4>
+                                <p style="margin:5px 0 0 0;">${escapeHtml(analysisResult.correctInfo)}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html = `
+                    <div class="main-card detector-card">
+                        <button class="side-btn" onclick="goPage('login')">&larr; Logout</button>
+                        <h2 class="analyzer-title">Fake News Analyzer</h2>
+
+                        <div class="content-flex">
+                            <div class="input-column">
+                                <form onsubmit="return runDetection(event)">
+                                    <div class="input-group">
+                                        <textarea id="newsText" placeholder="Paste news/article text here..."></textarea>
+
+                                        <div class="file-input-group">
+                                            <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,image/jpeg,image/png,.xlsx" onchange="handleFileUploadChange(this)">
+                                            <label for="fileUpload" id="fileLabel">Choose File (PDF, DOCX, JPG/PNG, XLSX)</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" style="width: 100%; margin: 10px 0;">Analyze Content</button>
+                                </form>
+
+                                <div id="resultMsg" style="font-size:1.15em;font-weight:700;text-align:center;color:#fff;margin-top:8px;">
+                                    ${escapeHtml(resultText || 'Ready to begin analysis.')}
+                                </div>
+
+                                ${resultSection}
+                            </div>
+
+                            <div class="chart-column">
+                                <div class="chart-card" style="min-height:170px">
+                                    <div class="chart-title">Fake Confidence Percentage</div>
+                                    <div class="confidence-display">
+                                        <canvas id="confidenceChart"></canvas>
+                                        <div id="confidenceValueText" class="confidence-chart-value">${fakeConfidencePercentage}%</div>
+                                    </div>
+                                </div>
+
+                                <div class="chart-card">
+                                    <div class="chart-title">Overall Analysis Count</div>
+                                    <canvas id="countChart" class="chart-canvas" style="height:120px"></canvas>
+                                    <div id="count-display" style="display:flex;justify-content:space-between;margin-top:10px">
+                                        <div style="color:var(--danger)">
+                                            <span class="count-label">Total Fake:</span>
+                                            <span class="count-value" id="fakeCount">${fake}</span>
+                                        </div>
+                                        <div style="color:var(--success)">
+                                            <span class="count-label">Total Genuine:</span>
+                                            <span class="count-value" id="genuineCount">${genuine}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            else {
+                html = `<div class="main-card"><h2>Not found</h2></div>`;
+            }
+
+            app.innerHTML = html;
+
+            // After DOM injection update charts or fallback values
+            if (currentPage === 'detector') {
+                // Update counters text
+                const fEl = document.getElementById('fakeCount');
+                const gEl = document.getElementById('genuineCount');
+                if (fEl) fEl.textContent = fake;
+                if (gEl) gEl.textContent = genuine;
+
+                // Draw charts (will gracefully exit if canvas not ready)
+                setTimeout(drawCharts, 40);
+            }
+        }
+
+        // small utility to avoid injecting raw HTML from backend
+        function escapeHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replaceAll('&','&amp;')
+                .replaceAll('<','&lt;')
+                .replaceAll('>','&gt;')
+                .replaceAll('"','&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        // --- Initialize ---
+        renderPage();
+    </script>
+</body>
+</html>
